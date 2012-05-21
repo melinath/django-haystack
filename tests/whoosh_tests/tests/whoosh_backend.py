@@ -710,6 +710,18 @@ class LiveWhooshSearchQuerySetTestCase(TestCase):
         self.assertEqual(sorted(results), [1, 2, 3])
         self.assertEqual(len(connections['default'].queries), 1)
 
+    def test_slice_then_manual_iter(self):
+        self.sb.update(self.wmmi, self.sample_objs)
+        results = self.sqs.auto_query('Indexed!')
+
+        reset_search_queries()
+        self.assertEqual(len(connections['default'].queries), 0)
+        self.assertEqual(sorted([int(result.pk) for result in results[0:2]]), [1, 2])
+        self.assertEqual(len(connections['default'].queries), 1)
+        iter_results = [int(result.pk) for result in results._manual_iter()]
+        self.assertEqual(sorted(iter_results), [1, 2, 3])
+        self.assertEqual(len(connections['default'].queries), 2)
+
     def test_fill_cache(self):
         self.sb.update(self.wmmi, self.sample_objs)
 
